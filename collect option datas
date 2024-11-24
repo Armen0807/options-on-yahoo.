@@ -1,0 +1,22 @@
+import yfinance as yf
+from scipy.stats import norm
+import numpy as np
+
+# Récupérer les données des options
+ticker = "AAPL"  # Exemple : Apple
+stock = yf.Ticker(ticker)
+
+# Obtenir les dates d'expiration des options
+expirations = stock.options
+print("Expiration Dates:", expirations)
+
+# Récupérer les options pour une date spécifique
+chosen_expiration = expirations[0]  # Première date d'expiration
+option_chain = stock.option_chain(chosen_expiration)
+
+# Appels et Puts
+calls = option_chain.calls
+puts = option_chain.puts
+
+print(calls.head())  # Aperçu des données des options d'achat (Calls)
+print(puts.head())   # Aperçu des données des options de vente (Puts)
