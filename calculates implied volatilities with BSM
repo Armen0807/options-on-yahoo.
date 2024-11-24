@@ -1,0 +1,48 @@
+def black_scholes_price(S, K, T, r, sigma, option_type="call"):
+    """
+    Calcule le prix d'une option européenne avec le modèle de Black-Scholes.
+    
+    Args:
+        S (float): Prix actuel de l'actif sous-jacent
+        K (float): Prix d'exercice (strike)
+        T (float): Temps jusqu'à l'expiration (en années)
+        r (float): Taux sans risque (annualisé)
+        sigma (float): Volatilité (standard deviation)
+        option_type (str): "call" ou "put"
+    
+    Returns:
+        float: Prix de l'option
+    """
+    d1 = (np.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * np.sqrt(T))
+    d2 = d1 - sigma * np.sqrt(T)
+    if option_type == "call":
+        return S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+    elif option_type == "put":
+        return K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
+    else:
+        raise ValueError("Invalid option_type. Use 'call' or 'put'.")
+
+def implied_volatility(S, K, T, r, market_price, option_type="call"):
+    """
+    Calcule la volatilité implicite par itération numérique.
+    
+    Args:
+        S (float): Prix actuel de l'actif sous-jacent
+        K (float): Prix d'exercice (strike)
+        T (float): Temps jusqu'à l'expiration (en années)
+        r (float): Taux sans risque (annualisé)
+        market_price (float): Prix de marché de l'option
+        option_type (str): "call" ou "put"
+    
+    Returns:
+        float: Volatilité implicite
+    """
+    from scipy.optimize import brentq
+
+    def objective_function(sigma):
+        return black_scholes_price(S, K, T, r, sigma, option_type) - market_price
+
+    try:
+        return brentq(objective_function, 1e-4, 5)  # Bornes initiales : 0.0001 à 5 (volatilité plausible)
+    except ValueError:
+        return None
